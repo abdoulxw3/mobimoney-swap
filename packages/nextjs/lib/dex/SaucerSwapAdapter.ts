@@ -1,12 +1,13 @@
 import { DexAdapter, SwapQuote } from "./DexAdapter";
-import { ContractId } from "@hashgraph/sdk";
+import {
+  ContractId,
+  ContractCallQuery,
+  ContractFunctionParameters,
+} from "@hashgraph/sdk";
+import { getHederaTestnetClient } from "../hedera/client";
 
 // SaucerSwap testnet V1 router — contract ID 0.0.19264
 const SAUCERSWAP_ROUTER_CONTRACT_ID = "0.0.19264";
-const SAUCERSWAP_ROUTER_EVM_ADDRESS = ContractId.fromString(SAUCERSWAP_ROUTER_CONTRACT_ID).toSolidityAddress();
-
-// WHBAR token ID 0.0.15058 (used when swapping HBAR itself)
-const WHBAR_TOKEN_ID = "0.0.15058";
 
 export class SaucerSwapAdapter implements DexAdapter {
   name = "SaucerSwap";
@@ -16,13 +17,27 @@ export class SaucerSwapAdapter implements DexAdapter {
     outputToken: string,
     inputAmount: string
   ): Promise<SwapQuote> {
-    // TODO: call router getAmountsOut via ContractCallQuery
+    const client = getHederaTestnetClient();
+
+    const params = new ContractFunctionParameters()
+      .addUint256(inputAmount)
+      .addAddressArray([inputToken, outputToken]);
+
+    const query = new ContractCallQuery()
+      .setContractId(ContractId.fromString(SAUCERSWAP_ROUTER_CONTRACT_ID))
+      .setGas(100000)
+      .setFunction("getAmountsOut", params);
+
+    const result = await query.execute(client);
+    const amounts = result.getResult(["uint256[]"]);
+    const outputAmount = amounts[0][1].toString();
+
     return {
       dex: this.name,
       inputToken,
       outputToken,
       inputAmount,
-      outputAmount: "0",
+      outputAmount,
       priceImpact: 0,
     };
   }
