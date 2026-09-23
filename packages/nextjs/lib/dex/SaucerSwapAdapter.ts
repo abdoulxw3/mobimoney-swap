@@ -63,7 +63,7 @@ export class SaucerSwapAdapter implements DexAdapter {
 
     const tx = new ContractExecuteTransaction()
       .setContractId(ContractId.fromString(SAUCERSWAP_ROUTER_CONTRACT_ID))
-      .setGas(300000)
+      .setGas(1000000)
       .setFunction("swapExactTokensForTokens", params);
 
     const submitted = await tx.execute(client);
