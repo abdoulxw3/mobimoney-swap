@@ -24,4 +24,3 @@ dist
 
 .env
 .env.local
-packages/foundry/lib/
