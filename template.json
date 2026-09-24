@@ -1,0 +1,15 @@
+{
+  "name": "mobimoney-swap",
+  "displayName": "MobiMoney Swap",
+  "description": "Mobile money on-ramp with best-price DEX routing on Hedera via SaucerSwap",
+  "author": "abdoulxw3",
+  "license": "MIT",
+  "hederaServices": ["HTS"],
+  "ecosystemIntegrations": ["SaucerSwap"],
+  "defaults": {
+    "network": "testnet",
+    "frontend": "nextjs",
+    "solidityFramework": "none",
+    "packageManager": "yarn"
+  }
+}
