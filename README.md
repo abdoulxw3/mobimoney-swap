@@ -1,85 +1,68 @@
-# Scaffold-HBAR — Blank starter
+# MobiMoney Swap
 
-Minimal Hedera dApp baseline: Next.js, Hardhat or Foundry, and Hedera networks (testnet, mainnet, local fork). No opinionated product UI — you add the app on top.
+Mobile money on-ramp with DEX routing on Hedera — built for the [Scaffold-HBAR Template Bounty](https://hedera.com/scaffold-hbar-template-bounty/).
 
-CLI key: `blank` (branch `templates/blank-template`).
+## The problem this solves
 
-The full product guide — CLI flags, npm vs Yarn, deploy, and verify — lives in [Scaffold HBAR on Hedera docs](https://docs.hedera.com/solutions/tools/scaffold-hbar/index). This README is what is specific to **this** template.
+To swap into a Hedera token today, you need to already own crypto — usually via a CEX detour that most African users don't have easy access to. MobiMoney Swap lets a user pay with **local mobile money** (M-Pesa, MTN MoMo, Airtel Money) and come out the other side with a token swap executed on-chain via [SaucerSwap](https://saucerswap.finance), Hedera's leading DEX. The user never leaves the app, never touches a third-party DEX interface, and never needs HBAR before they start.
 
-## What's in this template
+## What's real vs. stubbed in this submission
 
-- Next.js App Router with wallet connect, **Debug Contracts**, and a local block explorer
-- Sample HTS contracts (`HederaToken`, `HtsTokenCreator`) so Debug Contracts has something to call
-- Hardhat and Foundry packages (the CLI can drop one)
-- Hashio RPC + Mirror Node config for Hedera testnet and mainnet
-- Package manager: Yarn (recommended) or npm — see `template.json`
+- **Real, verified on-chain:** the SaucerSwap integration. `getQuote()` and `executeSwap()` in [`lib/dex/SaucerSwapAdapter.ts`](packages/nextjs/lib/dex/SaucerSwapAdapter.ts) make live calls to SaucerSwap's testnet router (`0.0.19264`) via `@hashgraph/sdk`. Two independent, real swaps have been executed and verified:
+  - <https://hashscan.io/testnet/transaction/0.0.9267960@1790204427.645447493>
+  - <https://hashscan.io/testnet/transaction/0.0.9267960@1790204611.765945169>
+- **Stubbed for this submission:** the mobile-money leg itself. Integrating a real payment provider's sandbox (Kotani Pay, Fonbnk) was too fragile a dependency for the bounty's build window, so the "deposit confirmed" trigger is mocked. The on-chain swap logic it triggers is fully real.
 
-Create a project from this template:
+## Architecture
 
-```bash
-npm create scaffold-hbar@latest -- --template blank
+```
+Mobile money deposit (mocked)
+        │
+        ▼
+  HTS receipt mint  ──────►  SaucerSwap router (swapExactETHForTokens)
+   (packages/nextjs)              (live testnet contract, real tx)
+        │
+        ▼
+  User receives swapped token, sees Hashscan confirmation
 ```
 
-`npx create-scaffold-hbar@latest --template blank` is equivalent. The CLI also asks for frontend, Solidity framework, network, and package manager.
+A known Hedera-specific gotcha worth documenting for the next person who hits it: accounts using an **ECDSA key** have a real Keccak-256-derived EVM alias, distinct from the "long-zero" address you'd compute from the account number with `AccountId.toSolidityAddress()`. Passing the long-zero address as a swap recipient fails with `INVALID_ALIAS_KEY`. The fix — implemented in `SaucerSwapAdapter.executeSwap()` — is to fetch the real alias from the mirror node (`GET /accounts/{id}` → `evm_address`) before using it in any contract call.
 
-## Work from this repository
-
-This branch uses Yarn workspaces, so clone-and-run needs Yarn. Apps created with the CLI can use Yarn (default) or npm; see the [docs](https://docs.hedera.com/solutions/tools/scaffold-hbar/index).
-
-### Prerequisites
-
-- [Node.js](https://nodejs.org/) ≥ 20.18.3
-- [Git](https://git-scm.com/) with `user.name` and `user.email` configured
-- [Yarn](https://yarnpkg.com/) (default; required if you clone this repo) or npm if you scaffolded with the CLI. For Yarn, install via Corepack:
-  ```bash
-  corepack enable && corepack prepare yarn@stable --activate
-  ```
-- **If using Foundry:** [Foundry](https://book.getfoundry.sh/getting-started/installation) (`forge`, `cast`, `anvil`)
-
-### Quick start
+## Setup
 
 ```bash
-yarn install
-
-# Terminal 1: local Hedera-forked node
-yarn hardhat:chain
-
-# Terminal 2: deploy to that node (8545)
-yarn hardhat:deploy --network localhost
-
-# Terminal 3: Next.js app
-yarn next:start
+cd packages/nextjs
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) and use the **Debug Contracts** page.
-
-Frontend only (no local chain):
+Create `packages/nextjs/.env.local`:
+```
+HEDERA_OPERATOR_ID=0.0.xxxxx
+HEDERA_OPERATOR_KEY=your-testnet-private-key
+```
+Get a testnet account and key at [portal.hedera.com](https://portal.hedera.com).
 
 ```bash
-yarn install
-yarn next:dev
+npm run dev
 ```
 
-`yarn hardhat:deploy` without `--network localhost` targets the in-process `hardhat` network, not the long-running fork. Local Hardhat and Foundry workflows are in [`packages/hardhat/README.md`](packages/hardhat/README.md) and [`packages/foundry/README.md`](packages/foundry/README.md). Deploy and verify on testnet/mainnet: [Hedera docs](https://docs.hedera.com/solutions/tools/scaffold-hbar/index#deploying-to-testnet).
+Open <http://localhost:3000>.
+
+## Scaffolding this template
+
+This project uses **no Solidity framework** — all Hedera interaction is via `@hashgraph/sdk` calls to SaucerSwap's already-deployed router, not custom contracts. The bare gate command currently defaults Solidity-framework selection to Foundry regardless of `template.json`'s declared `"solidityFramework": "none"` (flagged to the Hedera team for clarification, response pending as of this submission). Scaffolding with an explicit flag works and has been verified end-to-end:
+
+```bash
+npx create-scaffold-hbar@latest my-app --template abdoulxw3/mobimoney-swap --frontend nextjs-app --solidity-framework hardhat --network testnet
+```
 
 ## Project layout
 
-- **packages/hardhat** — Hardhat config, contracts, `deploy/` scripts, tests
-- **packages/foundry** — Forge config, contracts, `script/` deploy scripts, tests
-- **packages/nextjs** — Next.js app, RainbowKit, wagmi, scaffold config
-
-Network and RPC URLs are in `packages/hardhat/hardhat.config.ts` and `packages/foundry/foundry.toml` respectively.
+- **packages/nextjs** — Next.js App Router app. `lib/dex/` holds the DexAdapter interface and SaucerSwap implementation; `lib/hedera/` holds the Hedera client setup.
 
 ## Links
 
 - [Scaffold HBAR docs](https://docs.hedera.com/solutions/tools/scaffold-hbar/index)
-- [create-scaffold-hbar](https://github.com/hedera-dev/create-scaffold-hbar) — CLI
+- [SaucerSwap docs](https://docs.saucerswap.finance)
 - [Hedera Portal faucet](https://portal.hedera.com/faucet)
 - [HashScan](https://hashscan.io/)
-
-## Scaffolding this template
-
-This project uses no Solidity framework (all Hedera interaction is via `@hashgraph/sdk` calls to SaucerSwap's deployed router — no custom contracts). When scaffolding, specify this explicitly to skip the Foundry/Hardhat prompt:
-
-```bash
-npx create-scaffold-hbar@latest my-app --template abdoulxw3/mobimoney-swap --frontend nextjs-app --solidity-framework hardhat --network testnet
