@@ -11,7 +11,8 @@ To swap into a Hedera token today, you need to already own crypto — usually vi
 - **Real, verified on-chain:** the SaucerSwap integration. `getQuote()` and `executeSwap()` in [`lib/dex/SaucerSwapAdapter.ts`](packages/nextjs/lib/dex/SaucerSwapAdapter.ts) make live calls to SaucerSwap's testnet router (`0.0.19264`) via `@hashgraph/sdk`. Two independent, real swaps have been executed and verified:
   - <https://hashscan.io/testnet/transaction/0.0.9267960@1790204427.645447493>
   - <https://hashscan.io/testnet/transaction/0.0.9267960@1790204611.765945169>
-  - - **HTS receipt mint**, verified on testnet: MobiMoney Receipt (MMR) token `0.0.10742316`, minted and transferred at https://hashscan.io/testnet/transaction/0.0.9267960@1790502068.760129729
+- **Real, verified on-chain:** an HTS receipt token, minted and transferred as the "deposit confirmed" step. `mintReceiptToUser()` in [`lib/hedera/mint.ts`](packages/nextjs/lib/hedera/mint.ts) mints MobiMoney Receipt (MMR, token `0.0.10742316`) and transfers it to the user via `TokenMintTransaction` + `TransferTransaction`. Verified:
+  - <https://hashscan.io/testnet/transaction/0.0.9267960@1790502068.760129729>
 - **Stubbed for this submission:** the mobile-money leg itself. Integrating a real payment provider's sandbox (Kotani Pay, Fonbnk) was too fragile a dependency for the bounty's build window, so the "deposit confirmed" trigger is mocked. The on-chain swap logic it triggers is fully real.
 
 ## Architecture
@@ -32,8 +33,7 @@ A known Hedera-specific gotcha worth documenting for the next person who hits it
 ## Setup
 
 ```bash
-cd packages/nextjs
-npm install
+yarn install
 ```
 
 Create `packages/nextjs/.env.local`:
@@ -44,18 +44,22 @@ HEDERA_OPERATOR_KEY=your-testnet-private-key
 Get a testnet account and key at [portal.hedera.com](https://portal.hedera.com).
 
 ```bash
-npm run dev
+yarn next:dev
 ```
 
 Open <http://localhost:3000>.
 
 ## Scaffolding this template
 
-This project uses **no Solidity framework** — all Hedera interaction is via `@hashgraph/sdk` calls to SaucerSwap's already-deployed router, not custom contracts. The bare gate command currently defaults Solidity-framework selection to Foundry regardless of `template.json`'s declared `"solidityFramework": "none"` (flagged to the Hedera team for clarification, response pending as of this submission). Scaffolding with an explicit flag works and has been verified end-to-end:
+This project uses **no Solidity framework** — all Hedera interaction is via `@hashgraph/sdk` calls to SaucerSwap's already-deployed router, not custom contracts. `template.json` declares `"solidityFramework": "none"`.
+
+Scaffolding with the framework specified explicitly works and has been verified end-to-end:
 
 ```bash
-npx create-scaffold-hbar@latest my-app --template abdoulxw3/mobimoney-swap --frontend nextjs-app --solidity-framework hardhat --network testnet
+npx create-scaffold-hbar@latest my-app --template abdoulxw3/mobimoney-swap --frontend nextjs-app --solidity-framework none --network testnet
 ```
+
+**Known issue, reported to the Hedera team:** scaffolding with only `--template abdoulxw3/mobimoney-swap` (no other flags) causes the CLI to interactively select Foundry regardless of this template's declared `"solidityFramework": "none"`, then fail at `forge install` since this template doesn't include or need Foundry. If you hit this, use the explicit command above.
 
 ## Project layout
 
