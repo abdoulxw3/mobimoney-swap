@@ -11,6 +11,7 @@ To swap into a Hedera token today, you need to already own crypto — usually vi
 - **Real, verified on-chain:** the SaucerSwap integration. `getQuote()` and `executeSwap()` in [`lib/dex/SaucerSwapAdapter.ts`](packages/nextjs/lib/dex/SaucerSwapAdapter.ts) make live calls to SaucerSwap's testnet router (`0.0.19264`) via `@hashgraph/sdk`. Two independent, real swaps have been executed and verified:
   - <https://hashscan.io/testnet/transaction/0.0.9267960@1790204427.645447493>
   - <https://hashscan.io/testnet/transaction/0.0.9267960@1790204611.765945169>
+  - - **HTS receipt mint**, verified on testnet: MobiMoney Receipt (MMR) token `0.0.10742316`, minted and transferred at https://hashscan.io/testnet/transaction/0.0.9267960@1790502068.760129729
 - **Stubbed for this submission:** the mobile-money leg itself. Integrating a real payment provider's sandbox (Kotani Pay, Fonbnk) was too fragile a dependency for the bounty's build window, so the "deposit confirmed" trigger is mocked. The on-chain swap logic it triggers is fully real.
 
 ## Architecture
