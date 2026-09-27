@@ -76,3 +76,10 @@ Network and RPC URLs are in `packages/hardhat/hardhat.config.ts` and `packages/f
 - [create-scaffold-hbar](https://github.com/hedera-dev/create-scaffold-hbar) — CLI
 - [Hedera Portal faucet](https://portal.hedera.com/faucet)
 - [HashScan](https://hashscan.io/)
+
+## Scaffolding this template
+
+This project uses no Solidity framework (all Hedera interaction is via `@hashgraph/sdk` calls to SaucerSwap's deployed router — no custom contracts). When scaffolding, specify this explicitly to skip the Foundry/Hardhat prompt:
+
+```bash
+npx create-scaffold-hbar@latest my-app --template abdoulxw3/mobimoney-swap --frontend nextjs-app --solidity-framework hardhat --network testnet

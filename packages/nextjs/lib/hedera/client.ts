@@ -1,4 +1,4 @@
-import { Client, AccountId, PrivateKey } from "@hashgraph/sdk";
+import { AccountId, Client, PrivateKey } from "@hashgraph/sdk";
 
 export function getHederaTestnetClient(): Client {
   const operatorId = process.env.HEDERA_OPERATOR_ID;

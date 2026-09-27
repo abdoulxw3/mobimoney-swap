@@ -1,13 +1,12 @@
+import { getHederaTestnetClient } from "../hedera/client";
 import { DexAdapter, SwapQuote } from "./DexAdapter";
 import {
-  ContractId,
   ContractCallQuery,
   ContractExecuteTransaction,
   ContractFunctionParameters,
+  ContractId,
   Hbar,
-  HbarUnit,
 } from "@hashgraph/sdk";
-import { getHederaTestnetClient } from "../hedera/client";
 
 // SaucerSwap testnet V1 router — contract ID 0.0.19264
 const SAUCERSWAP_ROUTER_CONTRACT_ID = "0.0.19264";
@@ -17,9 +16,7 @@ const SAUCERSWAP_ROUTER_CONTRACT_ID = "0.0.19264";
 // check msg.sender / recipient identity need this real alias, not the long-zero
 // form — fetch it from the mirror node rather than compute it locally.
 async function getEvmAddressForAccount(hederaAccountId: string): Promise<string> {
-  const res = await fetch(
-    `https://testnet.mirrornode.hedera.com/api/v1/accounts/${hederaAccountId}`
-  );
+  const res = await fetch(`https://testnet.mirrornode.hedera.com/api/v1/accounts/${hederaAccountId}`);
   const data = await res.json();
   if (!data.evm_address) {
     throw new Error(`No evm_address found for account ${hederaAccountId}`);
@@ -30,15 +27,11 @@ async function getEvmAddressForAccount(hederaAccountId: string): Promise<string>
 export class SaucerSwapAdapter implements DexAdapter {
   name = "SaucerSwap";
 
-  async getQuote(
-    inputToken: string,
-    outputToken: string,
-    inputAmount: string
-  ): Promise<SwapQuote> {
+  async getQuote(inputToken: string, outputToken: string, inputAmount: string): Promise<SwapQuote> {
     const client = getHederaTestnetClient();
 
     const params = new ContractFunctionParameters()
-      .addUint256(inputAmount)
+      .addUint256(Number(inputAmount))
       .addAddressArray([inputToken, outputToken]);
 
     const query = new ContractCallQuery()
@@ -69,7 +62,7 @@ export class SaucerSwapAdapter implements DexAdapter {
     outputToken: string,
     inputAmount: string,
     minOutputAmount: string,
-    userAccountId: string
+    userAccountId: string,
   ): Promise<{ txId: string; hashscanUrl: string }> {
     const client = getHederaTestnetClient();
 
@@ -77,7 +70,7 @@ export class SaucerSwapAdapter implements DexAdapter {
     const deadline = Math.floor(Date.now() / 1000) + 300;
 
     const params = new ContractFunctionParameters()
-      .addUint256(minOutputAmount)
+      .addUint256(Number(minOutputAmount))
       .addAddressArray([inputToken, outputToken])
       .addAddress(userEvmAddress)
       .addUint256(deadline);

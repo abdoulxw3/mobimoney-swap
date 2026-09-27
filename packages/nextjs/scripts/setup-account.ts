@@ -41,7 +41,7 @@ async function main() {
   console.log("All setup steps complete.");
 }
 
-main().catch((err) => {
+main().catch(err => {
   console.error("Error:", err);
   process.exit(1);
 });

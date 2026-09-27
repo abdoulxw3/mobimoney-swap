@@ -1,10 +1,5 @@
 require("dotenv").config({ path: ".env.local" });
-const {
-  AccountAllowanceApproveTransaction,
-  AccountId,
-  ContractId,
-  TokenId,
-} = require("@hashgraph/sdk");
+const { AccountAllowanceApproveTransaction, AccountId, ContractId, TokenId } = require("@hashgraph/sdk");
 const { getHederaTestnetClient } = require("../lib/hedera/client");
 
 const WHBAR_TOKEN_ID = "0.0.15058";
@@ -22,7 +17,7 @@ async function main() {
       TokenId.fromString(WHBAR_TOKEN_ID),
       ownerId,
       AccountId.fromString(ROUTER_CONTRACT_ID),
-      190000000
+      190000000,
     )
     .execute(client);
 
@@ -30,7 +25,7 @@ async function main() {
   console.log("Status:", receipt.status.toString());
 }
 
-main().catch((err) => {
+main().catch(err => {
   console.error("Error:", err.message || err);
   process.exit(1);
 });

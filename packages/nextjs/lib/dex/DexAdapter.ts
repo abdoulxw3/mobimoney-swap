@@ -15,6 +15,6 @@ export interface DexAdapter {
     outputToken: string,
     inputAmount: string,
     minOutputAmount: string,
-    userAccountId: string
+    userAccountId: string,
   ): Promise<{ txId: string; hashscanUrl: string }>;
 }

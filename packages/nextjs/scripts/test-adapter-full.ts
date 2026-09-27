@@ -15,17 +15,11 @@ async function main() {
   const minOutput = Math.floor(Number(quote.outputAmount) * 0.95).toString();
 
   console.log("Executing swap via production adapter...");
-  const result = await adapter.executeSwap(
-    whbarEvm,
-    sauceEvm,
-    "30000000",
-    minOutput,
-    process.env.HEDERA_OPERATOR_ID
-  );
+  const result = await adapter.executeSwap(whbarEvm, sauceEvm, "30000000", minOutput, process.env.HEDERA_OPERATOR_ID);
   console.log("Result:", result);
 }
 
-main().catch((err) => {
+main().catch(err => {
   console.error("Error:", err.message || err);
   process.exit(1);
 });

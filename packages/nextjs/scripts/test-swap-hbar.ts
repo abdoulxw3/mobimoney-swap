@@ -45,7 +45,7 @@ async function main() {
   console.log("Hashscan:", `https://hashscan.io/testnet/transaction/${txId}`);
 }
 
-main().catch((err) => {
+main().catch(err => {
   console.error("Error:", err.message || err);
   process.exit(1);
 });
