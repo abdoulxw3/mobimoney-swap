@@ -4,7 +4,7 @@ Briefing for coding agents in this app (Cursor, Claude Code, Codex). Claude Code
 
 MobiMoney Swap is a Hedera dApp built on Scaffold-HBAR: Next.js App Router only, no Solidity framework. All Hedera interaction is via `@hashgraph/sdk` calls to SaucerSwap's already-deployed testnet router — there are no custom contracts, no Hardhat package, no Foundry package.
 
-Package manager: npm (see `package.json`).
+Package manager: yarn (see `package.json`).
 
 ## Layout
 
