@@ -4,7 +4,6 @@ export interface SwapQuote {
   outputToken: string;
   inputAmount: string;
   outputAmount: string;
-  priceImpact: number;
 }
 
 export interface DexAdapter {
@@ -15,6 +14,6 @@ export interface DexAdapter {
     outputToken: string,
     inputAmount: string,
     minOutputAmount: string,
-    userAccountId: string,
+    userAccountId: string
   ): Promise<{ txId: string; hashscanUrl: string }>;
 }

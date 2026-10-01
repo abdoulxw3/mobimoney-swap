@@ -1,9 +1,4 @@
-import {
-  TokenMintTransaction,
-  TransferTransaction,
-  TokenId,
-  AccountId,
-} from "@hashgraph/sdk";
+import { AccountId, TokenId, TokenMintTransaction, TransferTransaction } from "@hashgraph/sdk";
 import { getHederaTestnetClient } from "./client";
 
 // MobiMoney Receipt token (MMR) — minted when a mock mobile-money deposit clears,
@@ -12,20 +7,20 @@ const RECEIPT_TOKEN_ID = "0.0.10742316";
 
 export async function mintReceiptToUser(
   userAccountId: string,
-  amount: number
+  amount: number,
 ): Promise<{ txId: string; hashscanUrl: string }> {
   const client = getHederaTestnetClient();
 
-  // Mint new receipt tokens into the treasury (operator) account
-  const mintTx = await new TokenMintTransaction()
-    .setTokenId(TokenId.fromString(RECEIPT_TOKEN_ID))
-    .setAmount(amount)
-    .execute(client);
+  if (!client.operatorAccountId) {
+    throw new Error("Hedera client has no operator account configured");
+  }
+  const treasuryAccountId = client.operatorAccountId;
+
+  const mintTx = await new TokenMintTransaction().setTokenId(TokenId.fromString(RECEIPT_TOKEN_ID)).setAmount(amount).execute(client);
   await mintTx.getReceipt(client);
 
-  // Transfer the newly minted receipt to the user
   const transferTx = await new TransferTransaction()
-    .addTokenTransfer(RECEIPT_TOKEN_ID, client.operatorAccountId, -amount)
+    .addTokenTransfer(RECEIPT_TOKEN_ID, treasuryAccountId, -amount)
     .addTokenTransfer(RECEIPT_TOKEN_ID, AccountId.fromString(userAccountId), amount)
     .execute(client);
 

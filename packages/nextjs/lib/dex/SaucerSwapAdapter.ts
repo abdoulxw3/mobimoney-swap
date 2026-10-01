@@ -1,12 +1,12 @@
-import { getHederaTestnetClient } from "../hedera/client";
 import { DexAdapter, SwapQuote } from "./DexAdapter";
 import {
+  ContractId,
   ContractCallQuery,
   ContractExecuteTransaction,
   ContractFunctionParameters,
-  ContractId,
   Hbar,
 } from "@hashgraph/sdk";
+import { getHederaTestnetClient } from "../hedera/client";
 
 // SaucerSwap testnet V1 router — contract ID 0.0.19264
 const SAUCERSWAP_ROUTER_CONTRACT_ID = "0.0.19264";
@@ -49,7 +49,6 @@ export class SaucerSwapAdapter implements DexAdapter {
       outputToken,
       inputAmount,
       outputAmount,
-      priceImpact: 0,
     };
   }
 
